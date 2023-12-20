@@ -2,17 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Event;
+use App\Models\Attendee;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Gate;
 use App\Http\Resources\AttendeeResource;
 use App\Http\Traits\CanLoadRelationships;
-use App\Models\Attendee;
-use App\Models\Event;
-use Illuminate\Http\Request;
 
 class AttendeeController extends Controller
 {
     use CanLoadRelationships;
+
     private array $relations = ['user', 'event'];
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->except(['index', 'show', 'update']);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -61,13 +69,14 @@ class AttendeeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $event, Attendee $attendee)
+    public function destroy(Event $event, Attendee $attendee)
     {
+        $this->authorize('delete-attendee', [$event, $attendee]); // gate
         $attendee->delete();
 
-        // return response(status: 204);
         return response()->json([
             'message' => 'Attendee deleted successfully.'
         ], 200);
+        // return response(status: 204);
     }
 }
