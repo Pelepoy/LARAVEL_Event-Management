@@ -62,7 +62,7 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        $this->authorize('update', $event);
+        $this->authorize('update-event', $event);
 
         $event->update(
             $request->validate([
