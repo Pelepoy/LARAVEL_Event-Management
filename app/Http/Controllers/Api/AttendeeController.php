@@ -18,7 +18,10 @@ class AttendeeController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:sanctum')->except(['index', 'show', 'update']);
+        $this->middleware('auth:sanctum')->except(['index', 'show', 'update']); // make sure user is authenticated
+        $this->middleware('throttle:api')->only(['store', 'destroy']); // make sure user is not spamming the endpoint
+        $this->authorizeResource(Attendee::class, 'attendee'); // make sure user is authorized to access resource (policy)
+
     }
 
     /**
@@ -42,7 +45,7 @@ class AttendeeController extends Controller
     {
         $attendee = $this->loadRelationships(
             $event->attendees()->create([
-                'user_id' => 1,
+                'user_id' => $request->user()->id,
             ])
         );
         return new AttendeeResource($attendee);
@@ -71,7 +74,7 @@ class AttendeeController extends Controller
      */
     public function destroy(Event $event, Attendee $attendee)
     {
-        $this->authorize('delete-attendee', [$event, $attendee]); // gate
+        // $this->authorize('delete-attendee', [$event, $attendee]); // gate
         $attendee->delete();
 
         return response()->json([
