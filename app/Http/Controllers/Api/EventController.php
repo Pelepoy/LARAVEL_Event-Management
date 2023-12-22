@@ -17,7 +17,9 @@ class EventController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:sanctum')->except(['index', 'show']);
+        $this->middleware('auth:sanctum')->except(['index', 'show']); // make sure user is authenticated
+        $this->middleware('throttle:api')->only(['store', 'update', 'destroy']); // make sure user is not spamming the endpoint
+        $this->authorizeResource(Event::class, 'event'); // make sure user is authorized to access resource (policy)
     }
     /**
      * Display a listing of the resource.
@@ -62,7 +64,7 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        $this->authorize('update-event', $event);
+        // $this->authorize('update-event', $event); //gate
 
         $event->update(
             $request->validate([
